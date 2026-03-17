@@ -1,0 +1,1 @@
+const http=require('http');const fs=require('fs');const server=http.createServer((req,res)=>{if(req.url==='/users'){res.end(fs.readFileSync('server/shop/data/users.json'));}});server.listen(3000,()=>console.log('✅ API running 3000'));

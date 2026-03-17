@@ -1,0 +1,1 @@
+const WebSocket=require('ws');const wss=new WebSocket.Server({port:8080});wss.on('connection',ws=>{ws.send(JSON.stringify({msg:'Connected to AfriDigital WS'}));});console.log('✅ WebSocket running on 8080');

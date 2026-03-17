@@ -1,0 +1,7 @@
+[
+  {"username":"demo_user1","coins":100,"referralCode":"REF1001"},
+  {"username":"demo_user2","coins":50,"referralCode":"REF1002"},
+  {"username":"demo_user3","coins":150,"referralCode":"REF1003"},
+  {"username":"demo_user4","coins":200,"referralCode":"REF1004"},
+  {"username":"demo_user5","coins":80,"referralCode":"REF1005"}
+]

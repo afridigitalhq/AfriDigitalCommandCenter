@@ -1,0 +1,1 @@
+const fs=require('fs');module.exports={getUsers:()=>JSON.parse(fs.readFileSync('server/shop/data/users.json')),saveUsers:(u)=>fs.writeFileSync('server/shop/data/users.json',JSON.stringify(u,null,2))};
