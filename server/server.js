@@ -1,131 +1,52 @@
-const http=require('http');
-const fs=require('fs');
-const WebSocket=require('ws');
+const express=require('express'); const bodyParser=require('body-parser'); const cors=require('cors');
+const {loadJobs,saveJobs}=require('./jobs/jobsEngine');
+const {loadShop,saveShop}=require('./shop/shopEngine');
+const {loadChat,saveChat}=require('./chat/chatEngine');
+const {loadUrls,saveUrls}=require('./urls/urlEngine');
+const {loadRefs,saveRefs}=require('./referrals/referralEngine');
+const {loadForum,saveForum}=require('./forum/forumEngine');
+const fs=require('fs'); const app=express(); const PORT=3000; app.use(cors()); app.use(bodyParser.json()); app.use(express.static('server/public'));
 
-const PORT=process.env.PORT||3000;
+// === Jobs Routes ===
+app.post('/create-job',(req,res)=>{ let {poster,title,credits}=req.body; let jobs=loadJobs(); let id=Date.now(); jobs.push({id,title,poster,lockedCredits:credits,status:'open',bids:[]}); saveJobs(jobs); res.json({success:true,jobId:id});});
+app.get('/jobs',(req,res)=>res.json(loadJobs()));
 
-// ---------- USERS ----------
-function getUsers(){return JSON.parse(fs.readFileSync('server/shop/data/users.json'));}
-function saveUsers(u){fs.writeFileSync('server/shop/data/users.json',JSON.stringify(u,null,2));}
+// === Shop Routes ===
+app.get('/shop',(req,res)=>res.json(loadShop()));
 
-// ---------- JOBS ----------
-function getJobs(){return JSON.parse(fs.readFileSync('server/shop/data/jobs.json'));}
-function saveJobs(j){fs.writeFileSync('server/shop/data/jobs.json',JSON.stringify(j,null,2));}
+// === Chat Routes ===
+app.post('/chat/send',(req,res)=>{let {username,badge,country,message}=req.body; let chat=loadChat(); chat.push({username,badge,country,message,timestamp:Date.now()}); saveChat(chat); res.json({success:true});});
+app.get('/chat',(req,res)=>res.json(loadChat()));
 
-// ---------- SERVER ----------
-const server=http.createServer(async (req,res)=>{
-  if(req.method==='GET' && req.url==='/users'){
-    res.writeHead(200,{'Content-Type':'application/json'});
-    return res.end(JSON.stringify(getUsers()));
-  }
+// === Forum Routes ===
+app.post('/forum/send',(req,res)=>{let {username,country,message}=req.body; let forum=loadForum(); forum.push({username,country,message,timestamp:Date.now()}); saveForum(forum); res.json({success:true});});
+app.get('/forum',(req,res)=>res.json(loadForum()));
 
-  if(req.method==='GET' && req.url==='/jobs'){
-    res.writeHead(200,{'Content-Type':'application/json'});
-    return res.end(JSON.stringify(getJobs()));
-  }
+// === URL Watchdog Routes ===
+app.post('/add-url',(req,res)=>{let {user,url,subscriptionMonths}=req.body; let urls=loadUrls(); urls.push({user,url,subscriptionMonths,start:Date.now()}); saveUrls(urls); res.json({success:true});});
 
-  // CREATE JOB
-  if(req.method==='POST' && req.url==='/create-job'){
-    let body='';
-    req.on('data',chunk=>body+=chunk);
-    req.on('end',()=>{
-      let data=JSON.parse(body);
-      let users=getUsers();
-      let jobs=getJobs();
+// === Referral Routes ===
+app.post('/add-referral',(req,res)=>{let {referrer,newUser,amount}=req.body; let refs=loadRefs(); refs.push({referrer,newUser,amount,timestamp:Date.now()}); saveRefs(refs); res.json({success:true});});
+app.get('/referrals',(req,res)=>res.json(loadRefs()));
 
-      let user=users.find(u=>u.username===data.poster);
-      if(!user || user.coins < data.credits) return res.end("❌ Not enough coins");
+// === Admin chat lock example ===
+let chatLock={locked:false,unlockTime:null};
+app.post('/admin/chat-lock',(req,res)=>{let {duration}=req.body; chatLock.locked=true; chatLock.unlockTime=Date.now()+duration*60*1000; res.json({success:true,lockedUntil:chatLock.unlockTime});});
+setInterval(()=>{if(chatLock.locked && Date.now()>chatLock.unlockTime) chatLock.locked=false;},60000);
 
-      // Deduct + 10% fee
-      let fee=Math.floor(data.credits*0.1);
-      user.coins -= data.credits;
-
-      let job={
-        id:Date.now(),
-        title:data.title,
-        poster:data.poster,
-        lockedCredits:data.credits-fee,
-        status:'open',
-        bids:[]
-      };
-
-      jobs.push(job);
-      saveUsers(users);
-      saveJobs(jobs);
-
-      broadcast({type:'new_job',job});
-
-      res.end("✅ Job created");
-    });
-    return;
-  }
-
-  // PLACE BID
-  if(req.method==='POST' && req.url==='/bid'){
-    let body='';
-    req.on('data',c=>body+=c);
-    req.on('end',()=>{
-      let data=JSON.parse(body);
-      let jobs=getJobs();
-
-      let job=jobs.find(j=>j.id==data.jobId);
-      if(!job || job.status!=='open') return res.end("❌ Job not available");
-
-      job.bids.push({bidder:data.bidder,amount:data.amount});
-      saveJobs(jobs);
-
-      broadcast({type:'new_bid',jobId:job.id});
-
-      res.end("✅ Bid placed");
-    });
-    return;
-  }
-
-  // ACCEPT BID
-  if(req.method==='POST' && req.url==='/accept-bid'){
-    let body='';
-    req.on('data',c=>body+=c);
-    req.on('end',()=>{
-      let data=JSON.parse(body);
-      let jobs=getJobs();
-
-      let job=jobs.find(j=>j.id==data.jobId);
-      if(!job) return res.end("❌ Job not found");
-
-      job.status='assigned';
-      job.worker=data.worker;
-
-      saveJobs(jobs);
-
-      broadcast({type:'job_assigned',jobId:job.id});
-
-      res.end("✅ Bid accepted");
-    });
-    return;
-  }
-
-  res.end("AfriDigital Jobs Engine LIVE");
-});
-
-// ---------- WEBSOCKET ----------
-const wss=new WebSocket.Server({server});
-let clients=[];
-
-wss.on('connection',ws=>{
-  clients.push(ws);
-  ws.send(JSON.stringify({msg:'Connected to AfriDigital WS'}));
-});
-
-function broadcast(msg){
-  clients.forEach(c=>c.send(JSON.stringify(msg)));
+// === Credit System ===
+const creditsFile='server/data/credits.json';
+function loadCredits(){return fs.existsSync(creditsFile)?JSON.parse(fs.readFileSync(creditsFile)):{};}
+function saveCredits(data){fs.writeFileSync(creditsFile,JSON.stringify(data,null,2));}
+// Spend logic: platform first, then revenue
+function spendCredits(user,amount){
+  let data=loadCredits(); if(!data[user])data[user]={platform:0,revenue:0};
+  let remaining=amount;
+  if(data[user].platform>=remaining){data[user].platform-=remaining; remaining=0;}else{remaining-=data[user].platform; data[user].platform=0;}
+  if(remaining>0){data[user].revenue=Math.max(0,data[user].revenue-remaining);}
+  saveCredits(data);
 }
+module.exports={loadCredits,saveCredits,spendCredits};
 
-// ---------- DAILY COINS ----------
-setInterval(()=>{
-  let users=getUsers();
-  users.forEach(u=>u.coins+=5);
-  saveUsers(users);
-},86400000);
-
-// ---------- START ----------
-server.listen(PORT,()=>console.log('🚀 Jobs Engine running on '+PORT));
+// Start Server
+app.listen(PORT,()=>console.log('🚀 Ultra Mega Bootstrap AfriDigital running on',PORT));

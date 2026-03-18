@@ -1,9 +1,0 @@
-[
-  {"type":"ebook","name":"Learn Node.js","price":100},
-  {"type":"template","name":"Admin Dashboard Template","price":50},
-  {"type":"script","name":"Auto Backup Script","price":200},
-  {"type":"light_media","name":"HD Image Pack","price":10},
-  {"type":"light_media","name":"Small Video Clip","price":20},
-  {"type":"premium_media","name":"4K Video Bundle","price":200},
-  {"type":"premium_media","name":"Audio Pack","price":300}
-]

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AfriDigital Command Center</title>
+<style>
+body{font-family:Arial,sans-serif;background:#121212;color:#e0e0e0;margin:0;padding:0;}
+header{background:#1a73e8;color:white;padding:15px;text-align:center;font-size:1.5rem;}
+section{padding:20px;margin:10px;border-radius:8px;background:#1f1f1f;}
+h2{color:#ffcc00;} .benefit{background:#272727;padding:10px;margin:10px 0;border-radius:5px;}
+.benefit span{color:#1abc9c;font-weight:bold;}
+.footer{background:#1a73e8;color:white;text-align:center;padding:10px;margin-top:20px;}
+.progress-bar{width:100%;background:#272727;border-radius:5px;overflow:hidden;height:25px;margin:10px 0;}
+.progress-fill{height:100%;color:white;text-align:center;font-weight:bold;line-height:25px;transition:width 1s ease-in-out;}
+.marquee{background:#333;color:#ffcc00;padding:5px;overflow:hidden;white-space:nowrap;}
+</style>
+</head>
+<body>
+<header>AfriDigital Command Center</header>
+
+<div class="marquee" id="platformMarquee">Loading platform updates...</div>
+
+<section>
+<h2>Platform Overview</h2>
+<p>Welcome to AfriDigital, your ultimate DevOps & Cyber Security platform with integrated Jobs, Shop, Watchdog, URL monitoring, and Credit Economy.</p>
+</section>
+
+<section>
+<h2>Subscription Benefits</h2>
+<div class="benefit">Free Users: Limited 1 URL, 1 credit per external share, basic monitoring.</div>
+<div class="benefit">Pro Users: Extended metrics, multiple URLs, 2 credits per share, bonus free hrs, faster alerts.</div>
+<div class="benefit">Elite Users: Full DevOps stack, bulk URL monitoring, API integration, 4 credits per share, max free hrs, premium shop boosts.</div>
+</section>
+
+<section>
+<h2>Watchdog & DevOps</h2>
+<p>Monitor any URL for downtime, vulnerabilities, SSL expiration, suspicious activity, and DevOps metrics. Each URL subscription includes automated alerting, dashboard insights, and optional AI recommendations.</p>
+</section>
+
+<section>
+<h2>Jobs & Shop</h2>
+<p>Post and bid on jobs, track earnings, manage penalties, and interact via chat. Our Shop allows premium boosts and sorted displays. Coin/Credit animations show rewards in real-time.</p>
+</section>
+
+<section>
+<h2>Referral & Sharing</h2>
+<p>Share AfriDigital externally to earn credits (Free 1, Pro 2, Elite 4) and track your referrals. Multi-level referral bonuses apply per upgrade.</p>
+</section>
+
+<section>
+<h2>Interactive Notifications</h2>
+<p>Popups, coin/credit drops, and progress bars alert you when rewards, free hours, or earnings are received. Multi-language ready with auto-detect options.</p>
+</section>
+
+<section>
+<h2>How AfriDigital Command Center Works</h2>
+<video width="320" height="180" controls>
+  <source src="server/public/landing/commandCenterDemo.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+</section>
+
+<footer class="footer">© 2026 AfriDigital Command Center</footer>
+<script>
+function updateMarquee(){document.getElementById('platformMarquee').innerText='Top sharers, referrals, jobs, URL alerts, shop boosts live updates...';}
+setInterval(updateMarquee,5000);
+
+// Coin/credit animation stub
+function showCoinDrop(amount,user){console.log('Credit drop for',user,amount);}
+</script>
+</body>
+</html>

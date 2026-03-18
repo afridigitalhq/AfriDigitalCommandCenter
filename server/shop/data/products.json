@@ -1,5 +1,0 @@
-[
- {"type":"ebook","name":"Learn Node","price":100},
- {"type":"template","name":"Dashboard","price":50},
- {"type":"script","name":"Backup Tool","price":200}
-]
